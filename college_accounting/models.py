@@ -1,6 +1,21 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, DECIMAL, CheckConstraint
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, DECIMAL, CheckConstraint, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(String(20), default="admin")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(Date)
+
+    __table_args__ = (
+        CheckConstraint("role IN ('admin', 'super_admin')", name='check_user_role'),
+    )
 
 
 class Student(Base):
