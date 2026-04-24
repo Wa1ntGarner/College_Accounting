@@ -8,10 +8,10 @@ from services.user_service import UserService
 def main(page: ft.Page):
     page.title = "Учет общежития"
     page.theme_mode = ft.ThemeMode.LIGHT
-    page.window_width = 1200
-    page.window_height = 800
-    page.window_min_width = 1000
-    page.window_min_height = 600
+    page.window_width = 1440
+    page.window_height = 1000
+    page.window_min_width = 1440
+    page.window_min_height = 1000
 
     user_service = UserService()
     user_service.create_default_admin()
