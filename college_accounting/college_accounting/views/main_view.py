@@ -25,8 +25,6 @@ class MainView:
         self.room_floor_dropdown = None
         self.room_occupancy_dropdown = None
         self.rooms_table = None
-        self.report_start_date = None
-        self.report_end_date = None
 
     def show_overdue_notifications(self, overdue_contracts):
         def refresh_notifications(e=None):
@@ -1018,7 +1016,7 @@ class MainView:
             ft.Text("Список контрактов", size=20, weight=ft.FontWeight.BOLD),
         ]
 
-        if self.current_user.role in ["super_admin", "admin"]:
+        if self.current_user.role == "super_admin":
             header_row.append(
                 ft.ElevatedButton(
                     "Добавить контракт", on_click=self.open_contract_dialog
@@ -1065,20 +1063,26 @@ class MainView:
 
             action_buttons = []
 
-            if self.current_user.role in ["super_admin", "admin"]:
+            if self.current_user.role == "super_admin":
                 action_buttons.append(
-                    ft.TextButton("Редактировать", data=contract.id, on_click=self.edit_contract)
+                    ft.TextButton(
+                        "Редактировать", data=contract.id, on_click=self.edit_contract
+                    )
                 )
 
                 if contract.status == "active":
                     action_buttons.append(
-                        ft.TextButton("Завершить", data=contract.id, on_click=self.terminate_contract)
+                        ft.TextButton(
+                            "Завершить",
+                            data=contract.id,
+                            on_click=self.terminate_contract,
+                        )
                     )
 
-            # Удаление — только супер-админ
-            if self.current_user.role == "super_admin":
                 action_buttons.append(
-                    ft.TextButton("Удалить", data=contract.id, on_click=self.delete_contract)
+                    ft.TextButton(
+                        "Удалить", data=contract.id, on_click=self.delete_contract
+                    )
                 )
 
             rows.append(
@@ -1937,10 +1941,8 @@ class MainView:
         )
 
         report_result = ft.Column()
-        export_button = None
 
         def generate_report(e):
-            nonlocal export_button
             try:
                 start_date = date.fromisoformat(start_date_field.value)
                 end_date = date.fromisoformat(end_date_field.value)
@@ -2005,40 +2007,12 @@ class MainView:
                         rows=payment_rows,
                     )
                 )
-
-                # Сохраняем даты для экспорта
-                self.report_start_date = start_date
-                self.report_end_date = end_date
-
-                # Показываем кнопку экспорта
-                export_button.visible = True
             else:
                 report_result.controls.append(
                     ft.Text("Платежи за выбранный период не найдены")
                 )
-                export_button.visible = False
 
             self.page.update()
-
-        def export_to_excel(e):
-            filename = f"отчет_платежи_{self.report_start_date}_{self.report_end_date}.xlsx"
-            self.payment_service.export_report_to_excel(
-                self.report_start_date, self.report_end_date, filename
-            )
-
-            # Показываем сообщение об успешном экспорте
-            snack_bar = ft.SnackBar(
-                content=ft.Text(f"Отчет сохранен в файл: {filename}")
-            )
-            self.page.snack_bar = snack_bar
-            snack_bar.open = True
-            self.page.update()
-
-        export_button = ft.ElevatedButton(
-            "Экспорт в Excel",
-            on_click=export_to_excel,
-            visible=False,
-        )
 
         return ft.Column(
             [
@@ -2051,7 +2025,6 @@ class MainView:
                         ft.ElevatedButton(
                             "Сформировать отчет", on_click=generate_report
                         ),
-                        export_button,
                     ],
                     spacing=10,
                 ),
